@@ -1,4 +1,4 @@
-# 📝 MinimaList — A Minimalist To-Do App
+# 📝 MinimaList — A Minimalist To-Do List App
 
 MinimaList is a clean and responsive to-do list web app built with React and Tailwind CSS. It lets users manage their daily tasks with priority tags, a day selector, and a fun personal touch — your name!
 
@@ -36,6 +36,7 @@ MinimaList is a clean and responsive to-do list web app built with React and Tai
 │   └── TaskModal.jsx
 ├── assets
 │   ├── icons/
-│   └── image/
+│   ├── image/
+│   └──fonts/
 ├── App.jsx
 └── main.jsx
