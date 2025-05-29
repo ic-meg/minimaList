@@ -2,6 +2,8 @@
 
 MinimaList is a clean and responsive to-do list web app built with React and Tailwind CSS. It lets users manage their daily tasks with priority tags, a day selector, and a fun personal touch — your name!
 
+🟢 **Live Demo:** [https://minima-list-phi.vercel.app/](https://minima-list-phi.vercel.app/)
+
 ![MinimaList Screenshot]![Screenshot 2025-05-30 034050](https://github.com/user-attachments/assets/7073a851-2415-449c-b705-39c00494a5d7)
 
 ---
