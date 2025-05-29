@@ -33,6 +33,9 @@ MinimaList is a clean and responsive to-do list web app built with React and Tai
 ├── components
 │   ├── NameModal.jsx
 │   ├── TaskItem.jsx
+│   ├── FilterButton.jsx
+│   ├── TodoList.jsx
+│   ├── ProgressBar.jsx
 │   └── TaskModal.jsx
 ├── assets
 │   ├── icons/
