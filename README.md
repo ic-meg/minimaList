@@ -10,13 +10,11 @@ MinimaList is a clean and responsive to-do list web app built with React and Tai
 
 ##  Features
 
--  Add, complete, and delete tasks  
--  Input your name for a personalized greeting  
--  Tasks persist using localStorage  
--  Set task day (Mon–Sun, Next Week, Later)  
--  Set task priority and tag (e.g., Important)  
--  Progress bar showing completed tasks  
--  Clean and modern minimalist UI  
+Add, complete, and delete tasks  
+Input your name for a personalized greeting  
+Set task priority and tag (e.g., Important)  
+Progress bar showing completed tasks  
+Clean and modern minimalist UI  
 
 ---
 
