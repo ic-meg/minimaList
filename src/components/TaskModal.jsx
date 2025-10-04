@@ -5,6 +5,7 @@ const TaskModal = ({
   addTask,
   setShowModal,
   error,
+  submitLabel = "Submit",
 }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60  font-ia">
     <div className="bg-white w-full max-w-2xl mx-4 rounded-2xl shadow-2xl p-10 space-y-8 animate-fadeIn scale-100 transition-transform duration-300">
@@ -64,12 +65,12 @@ const TaskModal = ({
         <div className="flex items-center gap-4">
           <label className="w-24 font-medium">Tag</label>
           <select
-            value={newTask.tags[0] || ""}
-            onChange={(e) => setNewTask({ ...newTask, tags: [e.target.value] })}
+            value={newTask.tag || ""}
+            onChange={(e) => setNewTask({ ...newTask, tag: e.target.value })}
             className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition-all text-sm"
           >
             <option value="Important">Important</option>
-            <option value="Not Important">Not Important</option>
+            <option value="NotImportant">Not Important</option>
           </select>
         </div>
       </div>
@@ -90,10 +91,13 @@ const TaskModal = ({
           onClick={addTask}
           className="px-5 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition cursor-pointer"
         >
-          Submit
+          {submitLabel}
         </button>
       </div>
+
+
     </div>
+    
   </div>
 );
 
