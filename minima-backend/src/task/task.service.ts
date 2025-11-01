@@ -1,5 +1,5 @@
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Priority, Prisma } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { NotFoundException } from '@nestjs/common';
@@ -23,19 +23,29 @@ export class TaskService {
     }
   }
 
-  async findAll(priority?: 'Low' | 'Medium' | 'High') {
+  async findAll(priority?: 'LOW' | 'MEDIUM' | 'HIGH') {
     try {
       if (priority) {
         return await this.databaseService.task.findMany({
           where: {
-            priority,
+          priority: priority as Priority,
           },
         });
       }
       return await this.databaseService.task.findMany();
     } catch (error) {
-      this.logger.error('Error fetching tasks', error);
-      throw new InternalServerErrorException('Failed to fetch tasks');
+      this.logger.error('Error fetching tasks', {
+        message: error?.message,
+        code: error?.code,
+        meta: error?.meta,
+        stack: error?.stack,
+      });
+      // Provide more details in error message for debugging
+      const errorMessage = error?.message || 'Unknown error';
+      const errorCode = error?.code || 'UNKNOWN';
+      throw new InternalServerErrorException(
+        `Failed to fetch tasks: ${errorMessage} (${errorCode})`
+      );
     }
   }
 

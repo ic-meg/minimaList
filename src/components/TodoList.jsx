@@ -26,9 +26,9 @@ const TodoList = () => {
 
   const [newTask, setNewTask] = useState({
     title: "",
-    priority: "Low",
-    day: "Monday",
-    tag: "Important",
+    priority: "LOW",
+    day: "MONDAY",
+    tag: "IMPORTANT",
   });
   const [username, setUsername] = useState(() => {
     try {
@@ -112,9 +112,9 @@ const TodoList = () => {
     if (!task) return;
     setNewTask({
       title: task.title || "",
-      priority: task.priority || "Low",
-      day: task.day || "Monday",
-      tag: task.tag || "Important",
+      priority: task.priority || "LOW",
+      day: task.day || "MONDAY",
+      tag: task.tag || "IMPORTANT",
       completed: task.completed || false,
     });
     setEditingTaskId(id);
@@ -130,11 +130,27 @@ const TodoList = () => {
     }
 
     if (editingTaskId) {
+      const normalizeTag = (t) => {
+        if (!t) return "IMPORTANT";
+        if (typeof t !== "string") return t.toUpperCase();
+        const trimmed = t.trim().toUpperCase();
+        if (trimmed === "NOT IMPORTANT" || trimmed === "NOTIMPORTANT") return "NOTIMPORTANT";
+        return trimmed.replace(/\s+/g, "");
+      };
+
+      const normalizeDay = (d) => {
+        if (!d) return "MONDAY";
+        if (typeof d !== "string") return String(d).toUpperCase();
+        const trimmed = d.trim().toUpperCase();
+        if (trimmed === "NEXT WEEK") return "NEXTWEEK";
+        return trimmed.replace(/\s+/g, "");
+      };
+
       const payload = {
         title: newTask.title.trim(),
-        priority: newTask.priority,
-        day: newTask.day,
-        tag: newTask.tag,
+        priority: (newTask.priority || "LOW").toUpperCase(),
+        day: normalizeDay(newTask.day),
+        tag: normalizeTag(newTask.tag),
         completed: newTask.completed || false,
       };
 
@@ -148,22 +164,30 @@ const TodoList = () => {
       setTasks((prev) => prev.map((t) => (t.id === editingTaskId ? (pdata || { ...t, ...payload }) : t)));
       setEditingTaskId(null);
       setShowModal(false);
-      setNewTask({ title: "", priority: "Low", day: "Monday", tag: "Important" });
+      setNewTask({ title: "", priority: "LOW", day: "MONDAY", tag: "IMPORTANT" });
       return;
     }
 
     const normalizeTag = (t) => {
-      if (!t) return "Important";
-      if (typeof t !== "string") return t;
-      const trimmed = t.trim();
-      if (trimmed === "Not Important") return "NotImportant";
+      if (!t) return "IMPORTANT";
+      if (typeof t !== "string") return t.toUpperCase();
+      const trimmed = t.trim().toUpperCase();
+      if (trimmed === "NOT IMPORTANT" || trimmed === "NOTIMPORTANT") return "NOTIMPORTANT";
+      return trimmed.replace(/\s+/g, "");
+    };
+
+    const normalizeDay = (d) => {
+      if (!d) return "MONDAY";
+      if (typeof d !== "string") return String(d).toUpperCase();
+      const trimmed = d.trim().toUpperCase();
+      if (trimmed === "NEXT WEEK") return "NEXTWEEK";
       return trimmed.replace(/\s+/g, "");
     };
 
     const payload = {
       title: newTask.title.trim(),
-      priority: newTask.priority,
-      day: newTask.day,
+      priority: (newTask.priority || "LOW").toUpperCase(),
+      day: normalizeDay(newTask.day),
       tag: normalizeTag(newTask.tag),
       completed: newTask.completed || false,
     };
@@ -184,9 +208,9 @@ const TodoList = () => {
     setShowModal(false);
     setNewTask({
       title: "",
-      priority: "Low",
-      day: "Monday",
-      tag: "Important",
+      priority: "LOW",
+      day: "MONDAY",
+      tag: "IMPORTANT",
     });
 
     setError("");

@@ -37,9 +37,9 @@ const TaskModal = ({
             }
             className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition-all text-sm"
           >
-            <option>Low</option>
-            <option>Medium</option>
-            <option>High</option>
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
           </select>
         </div>
 
@@ -50,15 +50,15 @@ const TaskModal = ({
             onChange={(e) => setNewTask({ ...newTask, day: e.target.value })}
             className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition-all text-sm"
           >
-            <option>Monday</option>
-            <option>Tuesday</option>
-            <option>Wednesday</option>
-            <option>Thursday</option>
-            <option>Friday</option>
-            <option>Saturday</option>
-            <option>Sunday</option>
-            <option>Next Week</option>
-            <option>Later</option>
+            <option value="MONDAY">Monday</option>
+            <option value="TUESDAY">Tuesday</option>
+            <option value="WEDNESDAY">Wednesday</option>
+            <option value="THURSDAY">Thursday</option>
+            <option value="FRIDAY">Friday</option>
+            <option value="SATURDAY">Saturday</option>
+            <option value="SUNDAY">Sunday</option>
+            <option value="NEXTWEEK">Next Week</option>
+            <option value="LATER">Later</option>
           </select>
         </div>
 
@@ -69,8 +69,8 @@ const TaskModal = ({
             onChange={(e) => setNewTask({ ...newTask, tag: e.target.value })}
             className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition-all text-sm"
           >
-            <option value="Important">Important</option>
-            <option value="NotImportant">Not Important</option>
+            <option value="IMPORTANT">Important</option>
+            <option value="NOTIMPORTANT">Not Important</option>
           </select>
         </div>
       </div>

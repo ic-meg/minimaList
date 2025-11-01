@@ -36,13 +36,13 @@ const TaskItem = ({ task, toggleComplete, deleteTask, onEdit }) => (
       {/*  (priority, day, tags) */}
       <div className="flex flex-wrap justify-end gap-2 text-sm">
         <span className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs">
-          {task.priority}
+          {task.priority === 'LOW' ? 'Low' : task.priority === 'MEDIUM' ? 'Medium' : task.priority === 'HIGH' ? 'High' : task.priority}
         </span>
         <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-xs">
-          {task.day}
+          {task.day === 'NEXTWEEK' ? 'Next Week' : task.day === 'LATER' ? 'Later' : task.day.charAt(0) + task.day.slice(1).toLowerCase()}
         </span>
           <span className="bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full text-xs">
-            {task.tag === 'NotImportant' ? 'Not Important' : task.tag}
+            {task.tag === 'NOTIMPORTANT' ? 'Not Important' : task.tag === 'IMPORTANT' ? 'Important' : task.tag}
           </span>
       </div>
 
