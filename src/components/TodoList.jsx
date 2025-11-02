@@ -161,7 +161,7 @@ const TodoList = () => {
       };
 
       try {
-        const { error: perr, data: pdata } = await taskApi.updateTask(editingTaskId, payload);
+        const { error: perr, data: pdata, message } = await taskApi.updateTask(editingTaskId, payload);
         if (perr) {
           setFetchError(perr);
           setIsSubmitting(false);
@@ -173,6 +173,10 @@ const TodoList = () => {
         setEditingTaskId(null);
         setShowModal(false);
         setNewTask({ title: "", priority: "LOW", day: "MONDAY", tag: "IMPORTANT" });
+        //  Show success message
+        if (message) {
+          setFetchError(null);
+        }
       } finally {
         setIsSubmitting(false);
       }
@@ -204,7 +208,7 @@ const TodoList = () => {
     };
 
     try {
-      const { error, data } = await taskApi.createTask(payload);
+      const { error, data, message } = await taskApi.createTask(payload);
       if (error) {
         setFetchError(error);
         setIsSubmitting(false);
@@ -227,6 +231,10 @@ const TodoList = () => {
       });
 
       setError("");
+      //  Show success message 
+      if (message) {
+        setFetchError(null);
+      }
     } finally {
       setIsSubmitting(false);
     }
