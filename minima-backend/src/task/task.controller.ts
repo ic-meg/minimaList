@@ -8,8 +8,12 @@ export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   @Post()
-  create(@Body(ValidationPipe) createTaskDto: CreateTaskDto) {
-    return this.taskService.create(createTaskDto);
+  async create(@Body(ValidationPipe) createTaskDto: CreateTaskDto) {
+    const data = await this.taskService.create(createTaskDto);
+    return {
+      message: 'Task created successfully',
+      data,
+    };
   }
 
   @Get()
@@ -23,12 +27,20 @@ export class TaskController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body(ValidationPipe) updateTaskDto: UpdateTaskDTO) {
-    return this.taskService.update(id, updateTaskDto);
+  async update(@Param('id', ParseIntPipe) id: number, @Body(ValidationPipe) updateTaskDto: UpdateTaskDTO) {
+    const data = await this.taskService.update(id, updateTaskDto);
+    return {
+      message: 'Task updated successfully',
+      data,
+    };
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.taskService.remove(id);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    const data = await this.taskService.remove(id);
+    return {
+      message: 'Task deleted successfully',
+      data,
+    };
   }
 }
