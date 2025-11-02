@@ -20,6 +20,7 @@ const TodoList = () => {
   const [fetchError, setFetchError] = useState(null);
   const [nameError, setNameError] = useState(null);
   const [isLoading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const titleInputRef = useRef(null);
   const [nameModalOpen, setNameModalOpen] = useState(false);
   const [tempName, setTempName] = useState("");
@@ -73,6 +74,9 @@ const TodoList = () => {
     if (showModal) {
       if (titleInputRef.current) titleInputRef.current.focus();
       setFetchError(null);
+    } else {
+      // Reset submitting state when modal closes
+      setIsSubmitting(false);
     }
   }, [showModal]);
 
@@ -129,6 +133,8 @@ const TodoList = () => {
       return;
     }
 
+    setIsSubmitting(true);
+    
     if (editingTaskId) {
       const normalizeTag = (t) => {
         if (!t) return "IMPORTANT";
@@ -154,17 +160,22 @@ const TodoList = () => {
         completed: newTask.completed || false,
       };
 
-      const { error: perr, data: pdata } = await taskApi.updateTask(editingTaskId, payload);
-      if (perr) {
-        setFetchError(perr);
-        return;
-      }
+      try {
+        const { error: perr, data: pdata } = await taskApi.updateTask(editingTaskId, payload);
+        if (perr) {
+          setFetchError(perr);
+          setIsSubmitting(false);
+          return;
+        }
 
-      // update local list
-      setTasks((prev) => prev.map((t) => (t.id === editingTaskId ? (pdata || { ...t, ...payload }) : t)));
-      setEditingTaskId(null);
-      setShowModal(false);
-      setNewTask({ title: "", priority: "LOW", day: "MONDAY", tag: "IMPORTANT" });
+        // update local list
+        setTasks((prev) => prev.map((t) => (t.id === editingTaskId ? (pdata || { ...t, ...payload }) : t)));
+        setEditingTaskId(null);
+        setShowModal(false);
+        setNewTask({ title: "", priority: "LOW", day: "MONDAY", tag: "IMPORTANT" });
+      } finally {
+        setIsSubmitting(false);
+      }
       return;
     }
 
@@ -192,28 +203,33 @@ const TodoList = () => {
       completed: newTask.completed || false,
     };
 
-    const { error, data } = await taskApi.createTask(payload);
-    if (error) {
-      setFetchError(error);
-      return;
-    }
+    try {
+      const { error, data } = await taskApi.createTask(payload);
+      if (error) {
+        setFetchError(error);
+        setIsSubmitting(false);
+        return;
+      }
 
-    // Use server-created resource or refresh list
-    if (data && data.id) setTasks((prev) => [...prev, data]);
-    else {
-  const { error: e2, data: list } = await taskApi.fetchTasks();
-  if (e2) setFetchError(e2);
-  else setTasks(Array.isArray(list) ? list : []);
-    }
-    setShowModal(false);
-    setNewTask({
-      title: "",
-      priority: "LOW",
-      day: "MONDAY",
-      tag: "IMPORTANT",
-    });
+      // Use server-created resource or refresh list
+      if (data && data.id) setTasks((prev) => [...prev, data]);
+      else {
+        const { error: e2, data: list } = await taskApi.fetchTasks();
+        if (e2) setFetchError(e2);
+        else setTasks(Array.isArray(list) ? list : []);
+      }
+      setShowModal(false);
+      setNewTask({
+        title: "",
+        priority: "LOW",
+        day: "MONDAY",
+        tag: "IMPORTANT",
+      });
 
-    setError("");
+      setError("");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleNameSubmit = () => {
@@ -243,6 +259,7 @@ const TodoList = () => {
           setShowModal={setShowModal}
           error={fetchError || error}
           submitLabel={editingTaskId ? "Save" : "Submit"}
+          isSubmitting={isSubmitting}
         />
       )}
 
