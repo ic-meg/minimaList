@@ -15,7 +15,7 @@ export class DatabaseService extends PrismaClient implements OnModuleInit {
             }
        
             const maskedUrl = dbUrl.replace(/:([^:@]+)@/, ':****@');
-            this.logger.log(`Attempting to connect to database: ${maskedUrl}`);
+      
             await this.$connect();
             this.logger.log('Database connected successfully');
         } catch (error) {
