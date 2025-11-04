@@ -96,7 +96,7 @@ const TaskModal = ({
         <button
           onClick={addTask}
           disabled={isSubmitting}
-          className="px-5 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 min-w-[100px] justify-center"
+          className="px-5 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 min-w-[100px] justify-center"
         >
           {isSubmitting ? (
             <>
