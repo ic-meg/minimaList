@@ -17,6 +17,7 @@ const TodoList = () => {
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
+  const [originalTask, setOriginalTask] = useState(null);
   const [fetchError, setFetchError] = useState(null);
   const [nameError, setNameError] = useState(null);
   const [isLoading, setLoading] = useState(false);
@@ -41,12 +42,12 @@ const TodoList = () => {
 
   //fetch tasks from api
   useEffect(() => {
-    if (!Task_API) return;
+    if (!Task_API || !username) return; // Don't fetch if no username
     let mounted = true;
     const fetchItems = async () => {
       setLoading(true);
       try {
-        const { error, data } = await taskApi.fetchTasks();
+        const { error, data } = await taskApi.fetchTasks(username);
         if (error) setFetchError(error);
         else if (mounted) setTasks(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -59,7 +60,7 @@ const TodoList = () => {
     return () => {
       mounted = false;
     };
-  }, [Task_API]);
+  }, [Task_API, username]); // Add username as dependency
 
 
   useEffect(() => {
@@ -75,20 +76,23 @@ const TodoList = () => {
       if (titleInputRef.current) titleInputRef.current.focus();
       setFetchError(null);
     } else {
-      // Reset submitting state when modal closes
+      // Reset submitting state and editing state when modal closes
       setIsSubmitting(false);
+      setEditingTaskId(null);
+      setOriginalTask(null);
     }
   }, [showModal]);
 
   // patch toggle complete
   const toggleComplete = async (id) => {
+    if (!username) return; // Don't update if no username
     const existing = tasks.find((t) => t.id === id);
     if (!existing) return;
 
     const newCompleted = !existing.completed;
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, completed: newCompleted } : t)));
 
-    const { error } = await taskApi.updateTask(id, { completed: newCompleted });
+    const { error } = await taskApi.updateTask(id, { completed: newCompleted }, username);
 
     if (error) {
       setFetchError(error);
@@ -99,9 +103,10 @@ const TodoList = () => {
 
   //delete task from api
   const deleteTask = async (id) => {
+    if (!username) return; // Don't delete if no username
     setTasks((prev) => prev.filter((task) => task.id !== id));
 
-    const { error } = await taskApi.deleteTask(id);
+    const { error } = await taskApi.deleteTask(id, username);
     if (error) setFetchError(error);
   };
 
@@ -121,12 +126,37 @@ const TodoList = () => {
       tag: task.tag || "IMPORTANT",
       completed: task.completed || false,
     });
+    // Store original task for comparison
+    setOriginalTask({ ...task });
     setEditingTaskId(id);
     setShowModal(true);
   };
 
+  // Helper functions for normalization
+  const normalizeTag = (t) => {
+    if (!t) return "IMPORTANT";
+    if (typeof t !== "string") return t.toUpperCase();
+    const trimmed = t.trim().toUpperCase();
+    if (trimmed === "NOT IMPORTANT" || trimmed === "NOTIMPORTANT") return "NOTIMPORTANT";
+    return trimmed.replace(/\s+/g, "");
+  };
+
+  const normalizeDay = (d) => {
+    if (!d) return "MONDAY";
+    if (typeof d !== "string") return String(d).toUpperCase();
+    const trimmed = d.trim().toUpperCase();
+    if (trimmed === "NEXT WEEK") return "NEXTWEEK";
+    return trimmed.replace(/\s+/g, "");
+  };
+
   // add task logic
   const addTask = async () => {
+    if (!username) {
+      setError("Please enter your name first.");
+      setTimeout(() => setError(""), 2000);
+      return;
+    }
+    
     if (!newTask.title.trim()) {
       setError("Please enter a task title.");
       setTimeout(() => setError(""), 2000);
@@ -136,22 +166,6 @@ const TodoList = () => {
     setIsSubmitting(true);
     
     if (editingTaskId) {
-      const normalizeTag = (t) => {
-        if (!t) return "IMPORTANT";
-        if (typeof t !== "string") return t.toUpperCase();
-        const trimmed = t.trim().toUpperCase();
-        if (trimmed === "NOT IMPORTANT" || trimmed === "NOTIMPORTANT") return "NOTIMPORTANT";
-        return trimmed.replace(/\s+/g, "");
-      };
-
-      const normalizeDay = (d) => {
-        if (!d) return "MONDAY";
-        if (typeof d !== "string") return String(d).toUpperCase();
-        const trimmed = d.trim().toUpperCase();
-        if (trimmed === "NEXT WEEK") return "NEXTWEEK";
-        return trimmed.replace(/\s+/g, "");
-      };
-
       const payload = {
         title: newTask.title.trim(),
         priority: (newTask.priority || "LOW").toUpperCase(),
@@ -160,8 +174,34 @@ const TodoList = () => {
         completed: newTask.completed || false,
       };
 
+      // Compare with original task to detect changes
+      if (originalTask) {
+        const normalizedOriginal = {
+          title: (originalTask.title || "").trim(),
+          priority: (originalTask.priority || "LOW").toUpperCase(),
+          day: normalizeDay(originalTask.day),
+          tag: normalizeTag(originalTask.tag),
+          completed: originalTask.completed || false,
+        };
+
+        // Check if there are any changes
+        const hasChanges = 
+          payload.title !== normalizedOriginal.title ||
+          payload.priority !== normalizedOriginal.priority ||
+          payload.day !== normalizedOriginal.day ||
+          payload.tag !== normalizedOriginal.tag ||
+          payload.completed !== normalizedOriginal.completed;
+
+        if (!hasChanges) {
+          setError("No changes detected.");
+          setTimeout(() => setError(""), 2000);
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       try {
-        const { error: perr, data: pdata, message } = await taskApi.updateTask(editingTaskId, payload);
+        const { error: perr, data: pdata, message } = await taskApi.updateTask(editingTaskId, payload, username);
         if (perr) {
           setFetchError(perr);
           setIsSubmitting(false);
@@ -170,9 +210,10 @@ const TodoList = () => {
 
         // update local list
         setTasks((prev) => prev.map((t) => (t.id === editingTaskId ? (pdata || { ...t, ...payload }) : t)));
-        setEditingTaskId(null);
-        setShowModal(false);
-        setNewTask({ title: "", priority: "LOW", day: "MONDAY", tag: "IMPORTANT" });
+      setEditingTaskId(null);
+      setShowModal(false);
+      setNewTask({ title: "", priority: "LOW", day: "MONDAY", tag: "IMPORTANT" });
+      setOriginalTask(null);
         //  Show success message
         if (message) {
           setFetchError(null);
@@ -183,28 +224,13 @@ const TodoList = () => {
       return;
     }
 
-    const normalizeTag = (t) => {
-      if (!t) return "IMPORTANT";
-      if (typeof t !== "string") return t.toUpperCase();
-      const trimmed = t.trim().toUpperCase();
-      if (trimmed === "NOT IMPORTANT" || trimmed === "NOTIMPORTANT") return "NOTIMPORTANT";
-      return trimmed.replace(/\s+/g, "");
-    };
-
-    const normalizeDay = (d) => {
-      if (!d) return "MONDAY";
-      if (typeof d !== "string") return String(d).toUpperCase();
-      const trimmed = d.trim().toUpperCase();
-      if (trimmed === "NEXT WEEK") return "NEXTWEEK";
-      return trimmed.replace(/\s+/g, "");
-    };
-
     const payload = {
       title: newTask.title.trim(),
       priority: (newTask.priority || "LOW").toUpperCase(),
       day: normalizeDay(newTask.day),
       tag: normalizeTag(newTask.tag),
       completed: newTask.completed || false,
+      username: username, // Add username to payload
     };
 
     try {
@@ -218,7 +244,7 @@ const TodoList = () => {
       // Use server-created resource or refresh list
       if (data && data.id) setTasks((prev) => [...prev, data]);
       else {
-        const { error: e2, data: list } = await taskApi.fetchTasks();
+        const { error: e2, data: list } = await taskApi.fetchTasks(username);
         if (e2) setFetchError(e2);
         else setTasks(Array.isArray(list) ? list : []);
       }
@@ -229,7 +255,7 @@ const TodoList = () => {
         day: "MONDAY",
         tag: "IMPORTANT",
       });
-
+      setOriginalTask(null);
       setError("");
       //  Show success message 
       if (message) {
