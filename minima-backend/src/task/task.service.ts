@@ -23,16 +23,23 @@ export class TaskService {
     }
   }
 
-  async findAll(priority?: 'LOW' | 'MEDIUM' | 'HIGH') {
+  async findAll(username?: string, priority?: 'LOW' | 'MEDIUM' | 'HIGH') {
     try {
-      if (priority) {
-        return await this.databaseService.task.findMany({
-          where: {
-          priority: priority as Priority,
-          },
-        });
+      const where: any = {};
+      
+      // Filter by username if provided
+      if (username) {
+        where.username = username;
       }
-      return await this.databaseService.task.findMany();
+      
+      // Filter by priority if provided
+      if (priority) {
+        where.priority = priority as Priority;
+      }
+      
+      return await this.databaseService.task.findMany({
+        where,
+      });
     } catch (error) {
       this.logger.error('Error fetching tasks', {
         message: error?.message,
@@ -49,9 +56,14 @@ export class TaskService {
     }
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, username?: string) {
     try {
-      const task = await this.databaseService.task.findUnique({ where: { id } });
+      const where: any = { id };
+      if (username) {
+        where.username = username;
+      }
+      
+      const task = await this.databaseService.task.findFirst({ where });
       if (!task) throw new NotFoundException(`Task with ID ${id} not found`);
       return task;
     } catch (error) {
@@ -63,12 +75,15 @@ export class TaskService {
     }
   }
 
-  async update(id: number, updateTaskDto: Prisma.taskUpdateInput) {
+  async update(id: number, updateTaskDto: Prisma.taskUpdateInput, username?: string) {
     try {
+      const where: any = { id };
+      if (username) {
+        where.username = username;
+      }
+      
       return await this.databaseService.task.update({
-        where: {
-          id,
-        },
+        where,
         data: updateTaskDto,
       });
     } catch (error) {
@@ -80,12 +95,15 @@ export class TaskService {
     }
   }
 
-  async remove(id: number) {
+  async remove(id: number, username?: string) {
     try {
+      const where: any = { id };
+      if (username) {
+        where.username = username;
+      }
+      
       return await this.databaseService.task.delete({
-        where: {
-          id,
-        },
+        where,
       });
     } catch (error) {
       if (error.code === 'P2025') {

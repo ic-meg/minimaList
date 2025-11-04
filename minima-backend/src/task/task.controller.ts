@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, ValidationPipe, Query } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDTO } from './dto/update-task.dto';
@@ -17,18 +17,22 @@ export class TaskController {
   }
 
   @Get()
-  findAll() {
-    return this.taskService.findAll();
+  findAll(@Query('username') username?: string) {
+    return this.taskService.findAll(username);
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.taskService.findOne(id);
+  findOne(@Param('id', ParseIntPipe) id: number, @Query('username') username?: string) {
+    return this.taskService.findOne(id, username);
   }
 
   @Patch(':id')
-  async update(@Param('id', ParseIntPipe) id: number, @Body(ValidationPipe) updateTaskDto: UpdateTaskDTO) {
-    const data = await this.taskService.update(id, updateTaskDto);
+  async update(
+    @Param('id', ParseIntPipe) id: number, 
+    @Body(ValidationPipe) updateTaskDto: UpdateTaskDTO,
+    @Query('username') username?: string
+  ) {
+    const data = await this.taskService.update(id, updateTaskDto, username);
     return {
       message: 'Task updated successfully',
       data,
@@ -36,8 +40,8 @@ export class TaskController {
   }
 
   @Delete(':id')
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    const data = await this.taskService.remove(id);
+  async remove(@Param('id', ParseIntPipe) id: number, @Query('username') username?: string) {
+    const data = await this.taskService.remove(id, username);
     return {
       message: 'Task deleted successfully',
       data,
