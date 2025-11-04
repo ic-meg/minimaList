@@ -33,9 +33,15 @@ const TodoList = () => {
     day: "MONDAY",
     tag: "IMPORTANT",
   });
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(() => {
+    try {
+      return localStorage.getItem("username") || "";
+    } catch (e) {
+      return "";
+    }
+  });
 
-  // Fetch username from database
+  // Fetch username from database if not in localStorage
   useEffect(() => {
     if (!Task_API || username) {
       setIsCheckingUsername(false);
@@ -61,7 +67,14 @@ const TodoList = () => {
             )[0];
             
             if (mostRecentTask && mostRecentTask.username) {
-              setUsername(mostRecentTask.username);
+              const foundUsername = mostRecentTask.username;
+              setUsername(foundUsername);
+              // Save to localStorage as backup
+              try {
+                localStorage.setItem("username", foundUsername);
+              } catch (e) {
+                console.error("Failed to save username to localStorage:", e);
+              }
               // Username found and set, checking is complete
               if (mounted) setIsCheckingUsername(false);
               return;
@@ -315,7 +328,14 @@ const TodoList = () => {
 
   const handleNameSubmit = () => {
     if (tempName.trim()) {
-      setUsername(tempName.trim());
+      const trimmedName = tempName.trim();
+      setUsername(trimmedName);
+      // Save to localStorage
+      try {
+        localStorage.setItem("username", trimmedName);
+      } catch (e) {
+        console.error("Failed to save username to localStorage:", e);
+      }
       setNameModalOpen(false);
     }
   };
