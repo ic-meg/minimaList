@@ -16,7 +16,7 @@ const NameModal = ({ tempName, setTempName, handleNameSubmit }) => (
       <div className="flex justify-end">
         <button
           onClick={handleNameSubmit}
-          className="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition cursor-pointer"
+          className="bg-green-600 text-white px-5 py-2 rounded-md hover:bg-green-700 transition cursor-pointer"
         >
           Continue
         </button>
