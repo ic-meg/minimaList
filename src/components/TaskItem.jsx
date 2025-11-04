@@ -1,8 +1,35 @@
-const TaskItem = ({ task, toggleComplete, deleteTask, onEdit }) => (
-  <div
-    key={task.id}
-    className="flex justify-between items-start bg-white border border-gray-200 px-4 py-3 rounded-lg shadow-sm hover:shadow-md hover:border-gray-300 transition-all"
-  >
+import { useState } from "react";
+import DeleteConfirmModal from "./DeleteConfirmModal";
+
+const TaskItem = ({ task, toggleComplete, deleteTask, onEdit }) => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = () => {
+    deleteTask(task.id);
+    setShowDeleteModal(false);
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+  };
+
+  return (
+    <>
+      {showDeleteModal && (
+        <DeleteConfirmModal
+          taskTitle={task.title}
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
+      )}
+      <div
+        key={task.id}
+        className="flex justify-between items-start bg-white border border-gray-200 px-4 py-3 rounded-lg shadow-sm hover:shadow-md hover:border-gray-300 transition-all"
+      >
 
     <div className="flex items-start space-x-3 w-full max-w-[60%]">
       <button
@@ -61,7 +88,7 @@ const TaskItem = ({ task, toggleComplete, deleteTask, onEdit }) => (
 
         {/* delete button */}
         <button
-          onClick={() => deleteTask(task.id)}
+          onClick={handleDeleteClick}
           className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-600 transition rounded"
           title="Delete Task"
           aria-label={`Delete task ${task.title}`}
@@ -83,7 +110,9 @@ const TaskItem = ({ task, toggleComplete, deleteTask, onEdit }) => (
         </button>
       </div>
     </div>
-  </div>
-);
+    </div>
+    </>
+  );
+};
 
 export default TaskItem;
