@@ -4,9 +4,10 @@ const BASE = import.meta.env.VITE_TASK_API;
 
 const missing = () => ({ error: "No Task API configured.", status: null, data: null });
 
-const fetchTasks = async () => {
+const fetchTasks = async (username) => {
   if (!BASE) return missing();
-  return await apiRequest(BASE, null);
+  const url = username ? `${BASE}?username=${encodeURIComponent(username)}` : BASE;
+  return await apiRequest(url, null);
 };
 
 const createTask = async (payload) => {
@@ -28,9 +29,10 @@ const createTask = async (payload) => {
   return result;
 };
 
-const updateTask = async (id, payload) => {
+const updateTask = async (id, payload, username) => {
   if (!BASE) return missing();
-  const result = await apiRequest(`${BASE}/${id}`, {
+  const url = username ? `${BASE}/${id}?username=${encodeURIComponent(username)}` : `${BASE}/${id}`;
+  const result = await apiRequest(url, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -47,9 +49,10 @@ const updateTask = async (id, payload) => {
   return result;
 };
 
-const deleteTask = async (id) => {
+const deleteTask = async (id, username) => {
   if (!BASE) return missing();
-  const result = await apiRequest(`${BASE}/${id}`, { method: "DELETE" });
+  const url = username ? `${BASE}/${id}?username=${encodeURIComponent(username)}` : `${BASE}/${id}`;
+  const result = await apiRequest(url, { method: "DELETE" });
   
   // Extract data from response wrapper { message, data }
   if (result.data && result.data.data) {
