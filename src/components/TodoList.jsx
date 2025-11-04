@@ -25,6 +25,7 @@ const TodoList = () => {
   const titleInputRef = useRef(null);
   const [nameModalOpen, setNameModalOpen] = useState(false);
   const [tempName, setTempName] = useState("");
+  const [isCheckingUsername, setIsCheckingUsername] = useState(true);
 
   const [newTask, setNewTask] = useState({
     title: "",
@@ -32,13 +33,56 @@ const TodoList = () => {
     day: "MONDAY",
     tag: "IMPORTANT",
   });
-  const [username, setUsername] = useState(() => {
-    try {
-      return localStorage.getItem("username") || "";
-    } catch (e) {
-      return "";
+  const [username, setUsername] = useState("");
+
+  // Fetch username from database
+  useEffect(() => {
+    if (!Task_API || username) {
+      setIsCheckingUsername(false);
+      return; // Skip if username already set
     }
-  });
+    
+    let mounted = true;
+    const fetchUsernameFromDB = async () => {
+      setIsCheckingUsername(true);
+      try {
+        const { error, data } = await taskApi.fetchTasks(null);
+        if (error) {
+          if (mounted) setIsCheckingUsername(false);
+          return;
+        }
+        
+        if (mounted && Array.isArray(data) && data.length > 0) {
+          const usernames = [...new Set(data.map(task => task.username).filter(Boolean))];
+          
+          if (usernames.length > 0) {
+            const mostRecentTask = data.sort((a, b) => 
+              new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+            )[0];
+            
+            if (mostRecentTask && mostRecentTask.username) {
+              setUsername(mostRecentTask.username);
+              // Username found and set, checking is complete
+              if (mounted) setIsCheckingUsername(false);
+              return;
+            }
+          }
+        }
+        
+        // If we reach here, no username was found
+        // The finally block will set isCheckingUsername to false
+      } catch (err) {
+        console.error("Failed to fetch username from database:", err);
+      } finally {
+        if (mounted) setIsCheckingUsername(false);
+      }
+    };
+    
+    fetchUsernameFromDB();
+    return () => {
+      mounted = false;
+    };
+  }, [Task_API, username]);
 
   //fetch tasks from api
   useEffect(() => {
@@ -68,8 +112,11 @@ const TodoList = () => {
   }, [nameModalOpen]);
 
   useEffect(() => {
-    setNameModalOpen(username === "");
-  }, [username]);
+    // Only show modal if username is empty AND we've finished checking the database
+    if (!isCheckingUsername) {
+      setNameModalOpen(username === "");
+    }
+  }, [username, isCheckingUsername]);
 
   useEffect(() => {
     if (showModal) {
@@ -269,7 +316,6 @@ const TodoList = () => {
   const handleNameSubmit = () => {
     if (tempName.trim()) {
       setUsername(tempName.trim());
-      localStorage.setItem("username", tempName.trim());
       setNameModalOpen(false);
     }
   };
