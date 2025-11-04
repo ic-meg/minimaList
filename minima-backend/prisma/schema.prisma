@@ -20,6 +20,7 @@ model task {
   day       Day
   tag       Tag
   completed Boolean  @default(false)
+  username  String   // User who owns this task
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
