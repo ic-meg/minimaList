@@ -140,6 +140,13 @@ const TodoList = () => {
       setEditingTaskId(null);
       setOriginalTask(null);
       setError(null);
+      // Reset newTask to default values
+      setNewTask({
+        title: "",
+        priority: "LOW",
+        day: "MONDAY",
+        tag: "IMPORTANT",
+      });
     }
   }, [showModal]);
 
