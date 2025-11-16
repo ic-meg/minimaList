@@ -82,8 +82,7 @@ const TodoList = () => {
           }
         }
         
-        // If we reach here, no username was found
-        // The finally block will set isCheckingUsername to false
+  
       } catch (err) {
         console.error("Failed to fetch username from database:", err);
       } finally {
@@ -134,12 +133,13 @@ const TodoList = () => {
   useEffect(() => {
     if (showModal) {
       if (titleInputRef.current) titleInputRef.current.focus();
-      setFetchError(null);
+      setError(null);
     } else {
       // Reset submitting state and editing state when modal closes
       setIsSubmitting(false);
       setEditingTaskId(null);
       setOriginalTask(null);
+      setError(null);
     }
   }, [showModal]);
 
@@ -263,7 +263,7 @@ const TodoList = () => {
       try {
         const { error: perr, data: pdata, message } = await taskApi.updateTask(editingTaskId, payload, username);
         if (perr) {
-          setFetchError(perr);
+          setError(perr);
           setIsSubmitting(false);
           return;
         }
@@ -296,7 +296,7 @@ const TodoList = () => {
     try {
       const { error, data, message } = await taskApi.createTask(payload);
       if (error) {
-        setFetchError(error);
+        setError(error);
         setIsSubmitting(false);
         return;
       }
@@ -357,7 +357,7 @@ const TodoList = () => {
           setNewTask={setNewTask}
           addTask={addTask}
           setShowModal={setShowModal}
-          error={fetchError || error}
+          error={error}
           submitLabel={editingTaskId ? "Save" : "Submit"}
           isSubmitting={isSubmitting}
         />

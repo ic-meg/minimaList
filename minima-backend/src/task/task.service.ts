@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger, ConflictException } from '@nestjs/common';
 import { Priority, Prisma } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -12,12 +12,29 @@ export class TaskService {
 
   async create(createTaskDto: CreateTaskDto) {
     try {
+      // avoid duplicate task
+      const existingTask = await this.databaseService.task.findFirst({
+        where: {
+          title: createTaskDto.title,
+          username: createTaskDto.username,
+        },
+      });
+
+      if (existingTask) {
+        throw new ConflictException(
+          `A task with the title "${createTaskDto.title}" already exists for this user`
+        );
+      }
+
       return await this.databaseService.task.create({
         data: {
           ...createTaskDto,
         },
       });
     } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
       this.logger.error('Error creating task', error);
       throw new InternalServerErrorException('Failed to create task');
     }
@@ -81,12 +98,32 @@ export class TaskService {
       if (username) {
         where.username = username;
       }
-      
+
+      // If updating the title, check for duplicates
+      if (updateTaskDto.title && typeof updateTaskDto.title === 'string') {
+        const existingTask = await this.databaseService.task.findFirst({
+          where: {
+            title: updateTaskDto.title,
+            username: username,
+            NOT: { id: id }, // Exclude the current task
+          },
+        });
+
+        if (existingTask) {
+          throw new ConflictException(
+            `A task with the title "${updateTaskDto.title}" already exists for this user`
+          );
+        }
+      }
+
       return await this.databaseService.task.update({
         where,
         data: updateTaskDto,
       });
     } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
       if (error.code === 'P2025') {
         throw new NotFoundException(`Task with ID ${id} not found`);
       }
